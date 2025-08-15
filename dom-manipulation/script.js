@@ -5,10 +5,14 @@ let quotes = [
   { text: "Imagination is more important than knowledge.", category: "Wisdom" }
 ];
 
+
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
-const addQuoteBtn = document.getElementById("addQuoteBtn");
-const categorySelect = document.getElementById("categorySelect");
+const categorySelect = document.createElement("select");
+categorySelect.id = "categorySelect";
+
+
+document.body.insertBefore(categorySelect, quoteDisplay);
 
 
 function updateCategoryOptions() {
@@ -22,7 +26,8 @@ function updateCategoryOptions() {
   });
 }
 
-function showRandomQuote() {
+
+function displayRandomQuote() {
   const selectedCategory = categorySelect.value;
   const filteredQuotes = selectedCategory === "all"
     ? quotes
@@ -36,6 +41,29 @@ function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   const quote = filteredQuotes[randomIndex];
   quoteDisplay.textContent = `"${quote.text}" — ${quote.category}`;
+}
+
+
+function createAddQuoteForm() {
+  const formContainer = document.createElement("div");
+
+  const quoteInput = document.createElement("input");
+  quoteInput.id = "newQuoteText";
+  quoteInput.placeholder = "Enter a new quote";
+
+  const categoryInput = document.createElement("input");
+  categoryInput.id = "newQuoteCategory";
+  categoryInput.placeholder = "Enter quote category";
+
+  const addBtn = document.createElement("button");
+  addBtn.textContent = "Add Quote";
+  addBtn.onclick = addQuote;
+
+  formContainer.appendChild(quoteInput);
+  formContainer.appendChild(categoryInput);
+  formContainer.appendChild(addBtn);
+
+  document.body.appendChild(formContainer);
 }
 
 
@@ -60,8 +88,11 @@ function addQuote() {
 }
 
 
-newQuoteBtn.addEventListener("click", showRandomQuote);
-addQuoteBtn.addEventListener("click", addQuote);
+newQuoteBtn.addEventListener("click", displayRandomQuote);
 
 
 updateCategoryOptions();
+createAddQuoteForm();
+
+
+
