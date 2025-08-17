@@ -173,40 +173,40 @@ function addQuote(text, category) {
   filterQuotes();       // Reapply filter
 }
 
-const SERVER_URL = "https://your-mockapi-url.com/quotes";
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
 
-function fetchQuotesFromServer() {
-  fetch(SERVER_URL)
-    .then(res => res.json())
-    .then(serverQuotes => {
-      resolveConflicts(serverQuotes);
-    })
-    .catch(err => console.error("Server fetch failed:", err));
+
+setInterval(() => {
+  fetchQuotesFromServer();
+}, 30000);
+
+
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(SERVER_URL);
+    const serverQuotes = await response.json();
+    syncQuotes(serverQuotes);
+  } catch (error) {
+    console.error("Error fetching quotes:", error);
+  }
 }
 
-// Poll every 30 seconds
-setInterval(fetchQuotesFromServer, 30000);
 
-function resolveConflicts(serverQuotes) {
+function syncQuotes(serverQuotes) {
   const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
   const mergedQuotes = [];
 
   serverQuotes.forEach(serverQuote => {
     const localMatch = localQuotes.find(q => q.id === serverQuote.id);
-
     if (!localMatch) {
-      mergedQuotes.push(serverQuote); // New quote from server
+      mergedQuotes.push(serverQuote);
     } else {
-      // Compare timestamps
-      const serverTime = new Date(serverQuote.updatedAt);
-      const localTime = new Date(localMatch.updatedAt);
-
+      const serverTime = new Date(serverQuote.updatedAt || 0);
+      const localTime = new Date(localMatch.updatedAt || 0);
       mergedQuotes.push(serverTime > localTime ? serverQuote : localMatch);
     }
   });
 
-  // Add any local-only quotes
   localQuotes.forEach(localQuote => {
     if (!mergedQuotes.find(q => q.id === localQuote.id)) {
       mergedQuotes.push(localQuote);
@@ -218,14 +218,30 @@ function resolveConflicts(serverQuotes) {
   populateCategories();
   filterQuotes();
 }
+
+
+async function postQuoteToServer(quote) {
+  try {
+    await fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(quote)
+    });
+    notifyUser("Quote posted to server.");
+  } catch (error) {
+    console.error("Error posting quote:", error);
+  }
+}
+
+
 function notifyUser(message) {
   const notification = document.createElement("div");
   notification.textContent = message;
   notification.className = "notification";
   document.body.appendChild(notification);
-
   setTimeout(() => notification.remove(), 4000);
 }
+
 
 
 
