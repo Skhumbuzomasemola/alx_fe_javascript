@@ -129,6 +129,51 @@ updateCategoryOptions();
 loadLastQuote();
 createAddQuoteForm(); // If you're dynamically building the form
 
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+  const categories = [...new Set(quotes.map(q => q.category))];
+
+  // Clear existing options except "All"
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Restore last selected category
+  const savedCategory = localStorage.getItem("selectedCategory");
+  if (savedCategory) {
+    categoryFilter.value = savedCategory;
+    filterQuotes();
+  }
+}
+function filterQuotes() {
+  const selectedCategory = document.getElementById("categoryFilter").value;
+  localStorage.setItem("selectedCategory", selectedCategory);
+
+  const quoteContainer = document.getElementById("quoteContainer");
+  quoteContainer.innerHTML = "";
+
+  const filteredQuotes = selectedCategory === "all"
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
+
+  filteredQuotes.forEach(q => {
+    const quoteElement = document.createElement("p");
+    quoteElement.textContent = q.text;
+    quoteContainer.appendChild(quoteElement);
+  });
+}
+function addQuote(text, category) {
+  quotes.push({ text, category });
+  populateCategories(); // Refresh dropdown
+  filterQuotes();       // Reapply filter
+}
+
+
 
 
 
