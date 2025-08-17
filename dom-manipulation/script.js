@@ -173,6 +173,59 @@ function addQuote(text, category) {
   filterQuotes();       // Reapply filter
 }
 
+const SERVER_URL = "https://your-mockapi-url.com/quotes";
+
+function fetchQuotesFromServer() {
+  fetch(SERVER_URL)
+    .then(res => res.json())
+    .then(serverQuotes => {
+      resolveConflicts(serverQuotes);
+    })
+    .catch(err => console.error("Server fetch failed:", err));
+}
+
+// Poll every 30 seconds
+setInterval(fetchQuotesFromServer, 30000);
+
+function resolveConflicts(serverQuotes) {
+  const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  const mergedQuotes = [];
+
+  serverQuotes.forEach(serverQuote => {
+    const localMatch = localQuotes.find(q => q.id === serverQuote.id);
+
+    if (!localMatch) {
+      mergedQuotes.push(serverQuote); // New quote from server
+    } else {
+      // Compare timestamps
+      const serverTime = new Date(serverQuote.updatedAt);
+      const localTime = new Date(localMatch.updatedAt);
+
+      mergedQuotes.push(serverTime > localTime ? serverQuote : localMatch);
+    }
+  });
+
+  // Add any local-only quotes
+  localQuotes.forEach(localQuote => {
+    if (!mergedQuotes.find(q => q.id === localQuote.id)) {
+      mergedQuotes.push(localQuote);
+    }
+  });
+
+  localStorage.setItem("quotes", JSON.stringify(mergedQuotes));
+  notifyUser("Quotes synced with server.");
+  populateCategories();
+  filterQuotes();
+}
+function notifyUser(message) {
+  const notification = document.createElement("div");
+  notification.textContent = message;
+  notification.className = "notification";
+  document.body.appendChild(notification);
+
+  setTimeout(() => notification.remove(), 4000);
+}
 
 
 
