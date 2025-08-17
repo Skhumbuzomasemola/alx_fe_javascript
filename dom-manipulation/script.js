@@ -214,7 +214,7 @@ function syncQuotes(serverQuotes) {
   });
 
   localStorage.setItem("quotes", JSON.stringify(mergedQuotes));
-  notifyUser("Quotes synced with server.");
+  notifyUser("Quotes synced with server!");
   populateCategories();
   filterQuotes();
 }
